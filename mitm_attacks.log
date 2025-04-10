@@ -1,0 +1,19 @@
+2025-04-09 19:27:40,352 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:27:42,460 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:27:44,591 - WARNING - more Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:27:46,703 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:27:48,817 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:43:10,091 - ERROR - Failed to enable IP forwarding: [Errno 2] No such file or directory: '/proc/sys/net/ipv4/ip_forward'
+2025-04-09 19:44:55,339 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:44:57,459 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:44:59,577 - WARNING - more Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:45:01,714 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:45:03,843 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:52:26,135 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:52:28,261 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:52:30,377 - WARNING - more Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:52:32,493 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-09 19:52:34,614 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-10 10:29:59,245 - ERROR - Error restoring ARP tables: name 'target_mac' is not defined
+2025-04-10 10:30:24,747 - ERROR - Error restoring ARP tables: name 'target_mac' is not defined
+2025-04-10 10:34:11,444 - ERROR - Error restoring ARP tables: name 'target_mac' is not defined
