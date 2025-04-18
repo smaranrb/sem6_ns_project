@@ -74,8 +74,26 @@ def print_status(message, status="info"):
 
 def validate_ip(ip):
     """Validate IP address format."""
+    if not ip:
+        return False
     try:
         parts = ip.split('.')
-        return len(parts) == 4 and all(0 <= int(part) <= 255 for part in parts)
+        if len(parts) != 4:
+            return False
+        for part in parts:
+            if not part.isdigit():
+                return False
+            num = int(part)
+            if num < 0 or num > 255:
+                return False
+        return True
     except (AttributeError, TypeError, ValueError):
-        return False 
+        return False
+
+def validate_ip_with_error(ip, ip_name=""):
+    """Validate IP address and print error if invalid."""
+    if not validate_ip(ip):
+        error_msg = f"Invalid {ip_name + ' ' if ip_name else ''}IP address: {ip}"
+        print_status(error_msg, "error")
+        return False
+    return True 

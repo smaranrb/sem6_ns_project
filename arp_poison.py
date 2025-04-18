@@ -60,19 +60,28 @@ class ARPPoisoner:
         
         # Restore ARP tables
         try:
+            # Re-resolve MAC addresses in case they've changed
+            target_mac = getmacbyip(self.target_ip)
+            gateway_mac = getmacbyip(self.gateway_ip)
+            
+            if not target_mac or not gateway_mac:
+                print_status("Could not resolve MAC addresses during cleanup. Using cached values.", "warning")
+                target_mac = self.target_mac
+                gateway_mac = self.gateway_mac
+            
             # Send legitimate ARP replies to target
             send(ARP(op=2, pdst=self.target_ip, hwdst=target_mac, 
                     psrc=self.gateway_ip, hwsrc=gateway_mac), 
                  count=5, verbose=0, iface=self.interface)
             
             # Send legitimate ARP replies to gateway
-            send(ARP(op=2, pdst=self.gateway_ip, hwdst=self.gateway_mac, 
-                    psrc=self.target_ip, hwsrc=self.target_mac), 
+            send(ARP(op=2, pdst=self.gateway_ip, hwdst=gateway_mac, 
+                    psrc=self.target_ip, hwsrc=target_mac), 
                  count=5, verbose=0, iface=self.interface)
             
             # Send gratuitous ARP to restore gateway's MAC
             send(ARP(op=2, pdst="255.255.255.255", hwdst="ff:ff:ff:ff:ff:ff",
-                    psrc=self.gateway_ip, hwsrc=self.gateway_mac),
+                    psrc=self.gateway_ip, hwsrc=gateway_mac),
                  count=5, verbose=0, iface=self.interface)
             
             print_status("Restored ARP tables", "success")

@@ -1,93 +1,114 @@
 # Man-in-the-Middle Attack Tool
 
-This tool implements various man-in-the-middle attacks for educational purposes. It includes implementations of:
-- ARP Poisoning
-- ICMP Redirect
-- DHCP Spoofing
+A Python-based tool for demonstrating various Man-in-the-Middle (MITM) attacks for educational purposes. This tool includes implementations of ARP poisoning and DHCP spoofing attacks.
 
-## Prerequisites
+**WARNING: This tool is for educational purposes only. Do not use it against networks or systems you don't own or have explicit permission to test.**
 
-- Python 3.7+
-- Root/Administrator privileges (required for packet manipulation)
-- Scapy and other Python dependencies
+## Features
+
+- **ARP Poisoning**: Redirect traffic between a target and gateway through the attacker
+- **DHCP Spoofing**: Provide fake DHCP responses to assign IP addresses to clients
+
+## Requirements
+
+- Python 3.6+
+- Root/Administrator privileges (required for raw socket access)
+- Network interface with promiscuous mode support
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/mitm-tool.git
 cd mitm-tool
 ```
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
+2. Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Network Setup
-
-1. Ensure your VMs are on the same network (192.168.158.0/24)
-2. Configure your MacOS host as the gateway (192.168.158.1)
-3. Enable IP forwarding on your MacOS:
-```bash
-sudo sysctl -w net.inet.ip.forwarding=1
-```
-
 ## Usage
 
-### ARP Poisoning
+### General Syntax
+
+```bash
+sudo python main.py <attack_type> [options]
+```
+
+### ARP Poisoning Attack
+
+Redirects traffic between a target and gateway through the attacker.
+
 ```bash
 sudo python main.py arp <target_ip> <gateway_ip>
 ```
+
 Example:
 ```bash
-sudo python main.py arp 192.168.158.2 192.168.158.1
+sudo python main.py arp 192.168.1.100 192.168.1.1
 ```
 
-### ICMP Redirect
+### DHCP Spoofing Attack
+
+Provides fake DHCP responses to assign IP addresses to clients.
+
 ```bash
-sudo python main.py icmp <target_ip> <real_gateway> <fake_gateway>
+sudo python main.py dhcp <spoofed_ip> <spoofed_gw> [options]
 ```
+
+Options:
+- `--dns`: DNS servers to assign (default: 8.8.8.8, 8.8.4.4)
+- `--lease-time`: DHCP lease time in seconds (default: 43200)
+- `--subnet-mask`: Subnet mask to assign (default: 255.255.255.0)
+- `--interface`: Network interface to use (default: bridge101)
+
 Example:
 ```bash
-sudo python main.py icmp 192.168.158.2 192.168.158.1 192.168.158.3
+sudo python main.py dhcp 192.168.158.100 192.168.158.1 --dns 1.1.1.1 --subnet-mask 255.255.255.0 --interface bridge101
 ```
 
-### DHCP Spoofing
+## Verifying DHCP Spoofing Attack
+
+To verify that the DHCP spoofing attack is working:
+
+1. On the victim machine, release the current IP:
 ```bash
-sudo python main.py dhcp <spoofed_ip> <spoofed_gateway>
+sudo dhclient -r <interface>
 ```
-Example:
+
+2. Request a new IP:
 ```bash
-sudo python main.py dhcp 192.168.158.100 192.168.158.3
+sudo dhclient <interface>
 ```
 
-## Important Notes
+3. Check the IP configuration:
+```bash
+ip addr show <interface>
+```
 
-1. Always run with sudo/administrator privileges
-2. Use responsibly and only in controlled environments
-3. Some attacks may require additional system configuration
-4. Modern operating systems may have protections against these attacks
+You should see:
+- The victim getting an IP in the range you specified
+- The gateway set to your spoofed gateway
+- The DNS server set to your specified DNS server
 
 ## Troubleshooting
 
-1. If attacks don't work:
-   - Check network connectivity
-   - Verify IP forwarding is enabled
-   - Ensure correct network interface is being used
-   - Check firewall settings
+### Common Issues
 
-2. Common issues:
-   - "Operation not permitted" - Run with sudo
-   - "No such device" - Check interface name in config.py
-   - "Address already in use" - Stop other DHCP servers
+1. **Permission Denied**: Run the tool with sudo/administrator privileges
+2. **Interface Not Found**: Make sure to specify the correct network interface
+3. **No DHCP Requests**: Ensure the victim's DHCP client is properly configured
+4. **Multiple DHCP Servers**: There might be other DHCP servers on the network interfering
+
+### Stopping the Attack
+
+Press `Ctrl+C` to stop the attack. The tool will clean up and exit gracefully.
+
+## Disclaimer
+
+This tool is provided for educational purposes only. Using this tool against networks or systems without explicit permission is illegal and unethical. The authors are not responsible for any misuse or damage caused by this tool.
 
 ## License
 
-This tool is for educational purposes only. Use responsibly and ethically. 
+This project is licensed under the MIT License - see the LICENSE file for details. 
