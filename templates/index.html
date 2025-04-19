@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MITM Attack Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .attack-form {
+            margin-bottom: 2rem;
+        }
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">MITM Attack Tool</h1>
+        
+        <!-- Status Section -->
+        <div class="row mb-4">
+            <div class="col">
+                <h3>Attack Status</h3>
+                <div class="d-flex gap-3">
+                    <div>
+                        ARP Poisoning: 
+                        <span id="arp-status" class="badge bg-secondary status-badge">Stopped</span>
+                    </div>
+                    <div>
+                        DHCP Spoofing: 
+                        <span id="dhcp-status" class="badge bg-secondary status-badge">Stopped</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARP Poisoning Form -->
+        <div class="attack-form">
+            <h3>ARP Poisoning Attack</h3>
+            <form id="arp-form" class="row g-3">
+                <div class="col-md-6">
+                    <label for="target-ip" class="form-label">Target IP</label>
+                    <input type="text" class="form-control" id="target-ip" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="gateway-ip" class="form-label">Gateway IP</label>
+                    <input type="text" class="form-control" id="gateway-ip" required>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" id="start-arp">Start Attack</button>
+                    <button type="button" class="btn btn-danger" id="stop-arp" disabled>Stop Attack</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- DHCP Spoofing Form -->
+        <div class="attack-form">
+            <h3>DHCP Spoofing Attack</h3>
+            <form id="dhcp-form" class="row g-3">
+                <div class="col-md-6">
+                    <label for="spoofed-ip" class="form-label">Spoofed IP</label>
+                    <input type="text" class="form-control" id="spoofed-ip" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="spoofed-gw" class="form-label">Spoofed Gateway</label>
+                    <input type="text" class="form-control" id="spoofed-gw" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="dns" class="form-label">DNS Servers (comma-separated)</label>
+                    <input type="text" class="form-control" id="dns" value="8.8.8.8,8.8.4.4">
+                </div>
+                <div class="col-md-6">
+                    <label for="lease-time" class="form-label">Lease Time (seconds)</label>
+                    <input type="number" class="form-control" id="lease-time" value="43200">
+                </div>
+                <div class="col-md-6">
+                    <label for="subnet-mask" class="form-label">Subnet Mask</label>
+                    <input type="text" class="form-control" id="subnet-mask" value="255.255.255.0">
+                </div>
+                <div class="col-md-6">
+                    <label for="interface" class="form-label">Interface</label>
+                    <input type="text" class="form-control" id="interface" value="bridge101">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" id="start-dhcp">Start Attack</button>
+                    <button type="button" class="btn btn-danger" id="stop-dhcp" disabled>Stop Attack</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Update status every 2 seconds
+        function updateStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('arp-status').textContent = data.arp === 'running' ? 'Running' : 'Stopped';
+                    document.getElementById('arp-status').className = `badge ${data.arp === 'running' ? 'bg-success' : 'bg-secondary'} status-badge`;
+                    document.getElementById('start-arp').disabled = data.arp === 'running';
+                    document.getElementById('stop-arp').disabled = data.arp !== 'running';
+
+                    document.getElementById('dhcp-status').textContent = data.dhcp === 'running' ? 'Running' : 'Stopped';
+                    document.getElementById('dhcp-status').className = `badge ${data.dhcp === 'running' ? 'bg-success' : 'bg-secondary'} status-badge`;
+                    document.getElementById('start-dhcp').disabled = data.dhcp === 'running';
+                    document.getElementById('stop-dhcp').disabled = data.dhcp !== 'running';
+                });
+        }
+
+        setInterval(updateStatus, 2000);
+        updateStatus();
+
+        // ARP Attack Handlers
+        document.getElementById('arp-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/api/start_attack', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    attack_type: 'arp',
+                    target_ip: document.getElementById('target-ip').value,
+                    gateway_ip: document.getElementById('gateway-ip').value
+                })
+            });
+        });
+
+        document.getElementById('stop-arp').addEventListener('click', function() {
+            fetch('/api/stop_attack', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    attack_type: 'arp'
+                })
+            });
+        });
+
+        // DHCP Attack Handlers
+        document.getElementById('dhcp-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/api/start_attack', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    attack_type: 'dhcp',
+                    spoofed_ip: document.getElementById('spoofed-ip').value,
+                    spoofed_gw: document.getElementById('spoofed-gw').value,
+                    dns: document.getElementById('dns').value,
+                    lease_time: parseInt(document.getElementById('lease-time').value),
+                    subnet_mask: document.getElementById('subnet-mask').value,
+                    interface: document.getElementById('interface').value
+                })
+            });
+        });
+
+        document.getElementById('stop-dhcp').addEventListener('click', function() {
+            fetch('/api/stop_attack', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    attack_type: 'dhcp'
+                })
+            });
+        });
+    </script>
+</body>
+</html> 

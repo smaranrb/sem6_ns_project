@@ -27,3 +27,140 @@
 2025-04-10 10:50:04,325 - WARNING - more Mac address to reach destination not found. Using broadcast.
 2025-04-10 10:50:06,447 - WARNING - Mac address to reach destination not found. Using broadcast.
 2025-04-10 10:50:08,580 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 11:52:13,620 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 11:52:15,751 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 11:52:17,869 - WARNING - more Mac address to reach destination not found. Using broadcast.
+2025-04-19 11:52:19,986 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 11:52:22,102 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 12:39:05,510 - ERROR - Error in ARP poisoning attack: reentrant call inside <_io.BufferedWriter name='<stdout>'>
+2025-04-19 12:39:40,042 - ERROR - Error in ARP poisoning attack: Could not resolve MAC addresses
+2025-04-19 15:43:53,747 - ERROR - Error in ARP poisoning attack: Could not resolve MAC addresses
+2025-04-19 15:50:09,749 - INFO -  * Restarting with stat
+2025-04-19 15:50:14,490 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:14,632 - WARNING -  * Debugger is active!
+2025-04-19 15:50:14,653 - INFO -  * Debugger PIN: 126-543-100
+2025-04-19 15:50:18,679 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:22,895 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:27,102 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:31,276 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:35,471 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:39,665 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:43,857 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:48,064 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:52,262 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:50:56,475 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:00,688 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:04,895 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:09,088 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:13,311 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:17,516 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:21,731 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:25,932 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:30,139 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:34,347 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:38,550 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:42,741 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:46,957 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:51,143 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:55,357 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:51:59,565 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:03,764 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:07,972 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:12,184 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:16,394 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:20,665 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:24,854 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:29,025 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:33,228 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:37,439 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:41,644 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:45,845 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:50,045 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:54,248 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:52:58,458 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:02,647 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:06,856 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:11,035 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:15,240 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:19,443 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:23,635 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:27,822 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:32,023 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:36,218 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:40,417 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:44,626 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:48,834 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:53,029 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:53:57,226 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:01,437 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:05,639 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:09,818 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:14,017 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:18,238 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:22,529 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:26,764 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:30,984 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:35,207 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:39,426 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:43,653 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:47,858 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:52,087 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:54:56,302 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:00,525 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:04,750 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:08,970 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:13,189 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:17,413 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:21,639 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:25,863 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:30,075 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:34,295 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:38,520 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:42,739 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:46,967 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:51,170 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:55,395 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:55:59,627 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:03,852 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:08,078 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:12,298 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:16,540 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:20,770 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:25,035 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:29,238 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:33,461 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:45,174 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:49,338 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:53,547 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:56:57,759 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:01,960 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:06,154 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:10,326 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:14,538 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:18,742 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:22,946 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:27,158 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:31,360 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:35,558 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:39,767 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:43,965 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:48,138 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:52,333 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:57:56,551 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:58:00,758 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:58:04,970 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:58:09,179 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:58:13,355 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:58:17,563 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 15:58:21,762 - WARNING - Mac address to reach destination not found. Using broadcast.
+2025-04-19 16:00:59,759 - INFO -  * Restarting with stat
+2025-04-19 16:01:04,520 - WARNING -  * Debugger is active!
+2025-04-19 16:01:04,542 - INFO -  * Debugger PIN: 103-854-786
+2025-04-19 16:30:11,243 - INFO -  * Restarting with stat
+2025-04-19 16:30:16,370 - WARNING -  * Debugger is active!
+2025-04-19 16:30:16,391 - INFO -  * Debugger PIN: 126-543-100
+2025-04-19 18:35:46,690 - INFO -  * Restarting with stat
+2025-04-19 18:35:51,737 - WARNING -  * Debugger is active!
+2025-04-19 18:35:51,757 - INFO -  * Debugger PIN: 126-543-100
+2025-04-19 18:36:36,116 - INFO -  * Detected change in '/Users/smaranrb/University/Semester 6/Network Security/ns_project/dhcp_spoof.py', reloading
+2025-04-19 18:36:36,195 - INFO -  * Restarting with stat

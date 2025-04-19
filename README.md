@@ -11,7 +11,7 @@ A Python-based tool for demonstrating various Man-in-the-Middle (MITM) attacks f
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.8+
 - Root/Administrator privileges (required for raw socket access)
 - Network interface with promiscuous mode support
 
@@ -19,7 +19,7 @@ A Python-based tool for demonstrating various Man-in-the-Middle (MITM) attacks f
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/mitm-tool.git
+git clone https://github.com/smaranrb/sem6_ns_project.git
 cd mitm-tool
 ```
 
