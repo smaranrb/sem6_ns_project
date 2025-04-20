@@ -3,172 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MITM Attack Tool</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>MITM Attack Tool Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .attack-form {
-            margin-bottom: 2rem;
+        .sidebar {
+            background-color: #212529;
+            min-height: 100vh;
+            color: white;
         }
-        .status-badge {
-            font-size: 1rem;
-            padding: 0.5rem 1rem;
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar a:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar a.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .content {
+            padding: 20px;
+        }
+        .navbar {
+            padding: 10px 20px;
+        }
+        .attack-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .attack-card:hover {
+            transform: translateY(-5px);
         }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4">MITM Attack Tool</h1>
-        
-        <!-- Status Section -->
-        <div class="row mb-4">
-            <div class="col">
-                <h3>Attack Status</h3>
-                <div class="d-flex gap-3">
-                    <div>
-                        ARP Poisoning: 
-                        <span id="arp-status" class="badge bg-secondary status-badge">Stopped</span>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 p-0 sidebar">
+                <div class="d-flex flex-column p-3">
+                    <h4 class="mb-4 text-center">MITM Tool</h4>
+                    <a href="/dashboard" class="active">Dashboard</a>
+                    <a href="#" id="profile-link">Profile</a>
+                    <a href="#" id="logout-link">Logout</a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-0">
+                <nav class="navbar navbar-expand navbar-light bg-light">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">Dashboard</span>
+                        <div class="ms-auto">
+                            <span class="navbar-text me-3" id="user-role"></span>
+                            <span class="navbar-text" id="username"></span>
+                        </div>
                     </div>
-                    <div>
-                        DHCP Spoofing: 
-                        <span id="dhcp-status" class="badge bg-secondary status-badge">Stopped</span>
+                </nav>
+                
+                <div class="content">
+                    <h2 class="mb-4">Available Attacks</h2>
+                    
+                    <div class="row" id="attack-container">
+                        <!-- Attack cards will be dynamically added here based on permissions -->
+                    </div>
+                    
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Attack Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="status-container">
+                                        <p>ARP Poisoning: <span id="arp-status" class="badge bg-secondary">Checking...</span></p>
+                                        <p>DHCP Spoofing: <span id="dhcp-status" class="badge bg-secondary">Checking...</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ARP Poisoning Form -->
-        <div class="attack-form">
-            <h3>ARP Poisoning Attack</h3>
-            <form id="arp-form" class="row g-3">
-                <div class="col-md-6">
-                    <label for="target-ip" class="form-label">Target IP</label>
-                    <input type="text" class="form-control" id="target-ip" required>
+    <!-- Attack Configuration Modal -->
+    <div class="modal fade" id="attackModal" tabindex="-1" aria-labelledby="attackModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="attackModalLabel">Configure Attack</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="col-md-6">
-                    <label for="gateway-ip" class="form-label">Gateway IP</label>
-                    <input type="text" class="form-control" id="gateway-ip" required>
+                <div class="modal-body" id="modal-body">
+                    <!-- Attack form will be dynamically added here -->
                 </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary" id="start-arp">Start Attack</button>
-                    <button type="button" class="btn btn-danger" id="stop-arp" disabled>Stop Attack</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="start-attack-btn">Start Attack</button>
                 </div>
-            </form>
-        </div>
-
-        <!-- DHCP Spoofing Form -->
-        <div class="attack-form">
-            <h3>DHCP Spoofing Attack</h3>
-            <form id="dhcp-form" class="row g-3">
-                <div class="col-md-6">
-                    <label for="spoofed-ip" class="form-label">Spoofed IP</label>
-                    <input type="text" class="form-control" id="spoofed-ip" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="spoofed-gw" class="form-label">Spoofed Gateway</label>
-                    <input type="text" class="form-control" id="spoofed-gw" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="dns" class="form-label">DNS Servers (comma-separated)</label>
-                    <input type="text" class="form-control" id="dns" value="8.8.8.8,8.8.4.4">
-                </div>
-                <div class="col-md-6">
-                    <label for="lease-time" class="form-label">Lease Time (seconds)</label>
-                    <input type="number" class="form-control" id="lease-time" value="43200">
-                </div>
-                <div class="col-md-6">
-                    <label for="subnet-mask" class="form-label">Subnet Mask</label>
-                    <input type="text" class="form-control" id="subnet-mask" value="255.255.255.0">
-                </div>
-                <div class="col-md-6">
-                    <label for="interface" class="form-label">Interface</label>
-                    <input type="text" class="form-control" id="interface" value="bridge101">
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary" id="start-dhcp">Start Attack</button>
-                    <button type="button" class="btn btn-danger" id="stop-dhcp" disabled>Stop Attack</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Update status every 2 seconds
-        function updateStatus() {
-            fetch('/api/status')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('arp-status').textContent = data.arp === 'running' ? 'Running' : 'Stopped';
-                    document.getElementById('arp-status').className = `badge ${data.arp === 'running' ? 'bg-success' : 'bg-secondary'} status-badge`;
-                    document.getElementById('start-arp').disabled = data.arp === 'running';
-                    document.getElementById('stop-arp').disabled = data.arp !== 'running';
-
-                    document.getElementById('dhcp-status').textContent = data.dhcp === 'running' ? 'Running' : 'Stopped';
-                    document.getElementById('dhcp-status').className = `badge ${data.dhcp === 'running' ? 'bg-success' : 'bg-secondary'} status-badge`;
-                    document.getElementById('start-dhcp').disabled = data.dhcp === 'running';
-                    document.getElementById('stop-dhcp').disabled = data.dhcp !== 'running';
-                });
+        // Helper function to get cookie value
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
         }
 
-        setInterval(updateStatus, 2000);
-        updateStatus();
+        // User info
+        const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+        const token = getCookie('token');
+        
+        // Update user display
+        document.getElementById('username').textContent = userInfo.username || 'User';
+        document.getElementById('user-role').textContent = userInfo.role ? `Role: ${userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1)}` : '';
+        
+        // Check token on page load
+        if (!token) {
+            window.location.href = '/login';
+        }
 
-        // ARP Attack Handlers
-        document.getElementById('arp-form').addEventListener('submit', function(e) {
+        // Fetch attack status
+        function updateAttackStatus() {
+            fetch('/api/status', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) {
+                    const arpStatus = document.getElementById('arp-status');
+                    const dhcpStatus = document.getElementById('dhcp-status');
+                    
+                    arpStatus.textContent = data.arp;
+                    dhcpStatus.textContent = data.dhcp;
+                    
+                    arpStatus.className = data.arp === 'running' ? 'badge bg-success' : 'badge bg-danger';
+                    dhcpStatus.className = data.dhcp === 'running' ? 'badge bg-success' : 'badge bg-danger';
+                }
+            })
+            .catch(error => console.error('Error fetching status:', error));
+        }
+        
+        // Update status every 5 seconds
+        updateAttackStatus();
+        setInterval(updateAttackStatus, 5000);
+        
+        // Logout functionality
+        document.getElementById('logout-link').addEventListener('click', function(e) {
             e.preventDefault();
+            
+            fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(() => {
+                // Clear cookies and localStorage
+                document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                localStorage.removeItem('user');
+                
+                // Redirect to login
+                window.location.href = '/login';
+            })
+            .catch(error => console.error('Error logging out:', error));
+        });
+        
+        // Create attack cards based on user role
+        const attackContainer = document.getElementById('attack-container');
+        
+        // ARP Poisoning card
+        const arpCard = document.createElement('div');
+        arpCard.className = 'col-md-6 col-lg-4';
+        arpCard.innerHTML = `
+            <div class="card attack-card">
+                <div class="card-body">
+                    <h5 class="card-title">ARP Poisoning</h5>
+                    <p class="card-text">Intercept traffic between target and gateway by spoofing ARP responses.</p>
+                    <button class="btn btn-primary start-btn" data-attack="arp">Start Attack</button>
+                    <button class="btn btn-danger stop-btn" data-attack="arp">Stop Attack</button>
+                </div>
+            </div>
+        `;
+        attackContainer.appendChild(arpCard);
+        
+        // DHCP Spoofing card
+        const dhcpCard = document.createElement('div');
+        dhcpCard.className = 'col-md-6 col-lg-4';
+        dhcpCard.innerHTML = `
+            <div class="card attack-card">
+                <div class="card-body">
+                    <h5 class="card-title">DHCP Spoofing</h5>
+                    <p class="card-text">Provide malicious network configuration by acting as a rogue DHCP server.</p>
+                    <button class="btn btn-primary start-btn" data-attack="dhcp">Start Attack</button>
+                    <button class="btn btn-danger stop-btn" data-attack="dhcp">Stop Attack</button>
+                </div>
+            </div>
+        `;
+        attackContainer.appendChild(dhcpCard);
+        
+        // Modal and attack configuration
+        const modal = new bootstrap.Modal(document.getElementById('attackModal'));
+        let currentAttack = null;
+        
+        // Handle start attack buttons
+        document.querySelectorAll('.start-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const attackType = this.getAttribute('data-attack');
+                currentAttack = attackType;
+                
+                const modalBody = document.getElementById('modal-body');
+                
+                if (attackType === 'arp') {
+                    modalBody.innerHTML = `
+                        <form id="arp-form">
+                            <div class="mb-3">
+                                <label for="target-ip" class="form-label">Target IP</label>
+                                <input type="text" class="form-control" id="target-ip" placeholder="192.168.158.10" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="gateway-ip" class="form-label">Gateway IP</label>
+                                <input type="text" class="form-control" id="gateway-ip" placeholder="192.168.158.1" required>
+                            </div>
+                        </form>
+                    `;
+                } else if (attackType === 'dhcp') {
+                    modalBody.innerHTML = `
+                        <form id="dhcp-form">
+                            <div class="mb-3">
+                                <label for="spoofed-ip" class="form-label">Spoofed IP</label>
+                                <input type="text" class="form-control" id="spoofed-ip" placeholder="192.168.158.100" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="spoofed-gw" class="form-label">Spoofed Gateway</label>
+                                <input type="text" class="form-control" id="spoofed-gw" placeholder="192.168.158.1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="dns" class="form-label">DNS Servers</label>
+                                <input type="text" class="form-control" id="dns" placeholder="8.8.8.8,8.8.4.4">
+                            </div>
+                            <div class="mb-3">
+                                <label for="lease-time" class="form-label">Lease Time</label>
+                                <input type="number" class="form-control" id="lease-time" placeholder="43200">
+                            </div>
+                            <div class="mb-3">
+                                <label for="subnet-mask" class="form-label">Subnet Mask</label>
+                                <input type="text" class="form-control" id="subnet-mask" placeholder="255.255.255.0">
+                            </div>
+                            <div class="mb-3">
+                                <label for="interface" class="form-label">Network Interface</label>
+                                <input type="text" class="form-control" id="interface" placeholder="bridge101">
+                            </div>
+                        </form>
+                    `;
+                }
+                
+                document.getElementById('attackModalLabel').textContent = `Configure ${attackType.toUpperCase()} Attack`;
+                modal.show();
+            });
+        });
+        
+        // Handle start attack button in modal
+        document.getElementById('start-attack-btn').addEventListener('click', function() {
+            let data = { attack_type: currentAttack };
+            
+            if (currentAttack === 'arp') {
+                const form = document.getElementById('arp-form');
+                data.target_ip = document.getElementById('target-ip').value;
+                data.gateway_ip = document.getElementById('gateway-ip').value;
+            } else if (currentAttack === 'dhcp') {
+                data.spoofed_ip = document.getElementById('spoofed-ip').value;
+                data.spoofed_gw = document.getElementById('spoofed-gw').value;
+                data.dns = document.getElementById('dns').value || '8.8.8.8,8.8.4.4';
+                data.lease_time = document.getElementById('lease-time').value || 43200;
+                data.subnet_mask = document.getElementById('subnet-mask').value || '255.255.255.0';
+                data.interface = document.getElementById('interface').value || 'bridge101';
+            }
+            
             fetch('/api/start_attack', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    attack_type: 'arp',
-                    target_ip: document.getElementById('target-ip').value,
-                    gateway_ip: document.getElementById('gateway-ip').value
-                })
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                modal.hide();
+                updateAttackStatus();
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error starting attack:', error);
+                alert('An error occurred while starting the attack');
             });
         });
-
-        document.getElementById('stop-arp').addEventListener('click', function() {
-            fetch('/api/stop_attack', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    attack_type: 'arp'
+        
+        // Handle stop attack buttons
+        document.querySelectorAll('.stop-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const attackType = this.getAttribute('data-attack');
+                
+                fetch('/api/stop_attack', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ attack_type: attackType })
                 })
-            });
-        });
-
-        // DHCP Attack Handlers
-        document.getElementById('dhcp-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            fetch('/api/start_attack', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    attack_type: 'dhcp',
-                    spoofed_ip: document.getElementById('spoofed-ip').value,
-                    spoofed_gw: document.getElementById('spoofed-gw').value,
-                    dns: document.getElementById('dns').value,
-                    lease_time: parseInt(document.getElementById('lease-time').value),
-                    subnet_mask: document.getElementById('subnet-mask').value,
-                    interface: document.getElementById('interface').value
+                .then(response => response.json())
+                .then(data => {
+                    updateAttackStatus();
+                    alert(data.message);
                 })
-            });
-        });
-
-        document.getElementById('stop-dhcp').addEventListener('click', function() {
-            fetch('/api/stop_attack', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    attack_type: 'dhcp'
-                })
+                .catch(error => {
+                    console.error('Error stopping attack:', error);
+                    alert('An error occurred while stopping the attack');
+                });
             });
         });
     </script>

