@@ -130,4 +130,133 @@ def get_profile(current_user):
         },
         'permissions': permissions,
         'sessions': sessions
-    }) 
+    })
+
+@auth_bp.route('/api/activity-logs', methods=['GET'])
+@token_required
+def get_activity_logs(current_user):
+    try:
+        logs = db.get_user_logs(current_user['id'])
+        return jsonify({
+            'status': 'success',
+            'logs': logs
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@auth_bp.route('/api/attack-sessions', methods=['GET'])
+@token_required
+def get_attack_sessions(current_user):
+    try:
+        sessions = db.get_user_sessions(current_user['id'])
+        return jsonify({
+            'status': 'success',
+            'sessions': sessions
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@auth_bp.route('/users', methods=['GET'])
+@token_required
+def get_users(current_user):
+    if current_user['role'] != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    try:
+        users = db.get_all_users()
+        for user in users:
+            # Get permissions for each user
+            permissions = db.get_user_permissions(user['id'])
+            user['permissions'] = {}
+            for perm in permissions:
+                if perm['attack_type'] not in user['permissions']:
+                    user['permissions'][perm['attack_type']] = {}
+                user['permissions'][perm['attack_type']] = {
+                    'can_start': perm['can_start'],
+                    'can_stop': perm['can_stop'],
+                    'can_view_logs': perm['can_view_logs']
+                }
+        return jsonify(users)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@auth_bp.route('/users', methods=['POST'])
+@token_required
+def create_user(current_user):
+    if current_user['role'] != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    try:
+        user_id = db.create_user(
+            data['username'],
+            data['password'],
+            data['email'],
+            data['role']
+        )
+        
+        # Set default permissions based on role
+        if data['role'] == 'admin':
+            db.set_user_permissions(user_id, 'arp', True, True, True)
+            db.set_user_permissions(user_id, 'dhcp', True, True, True)
+        else:
+            db.set_user_permissions(user_id, 'arp', True, True, False)
+            db.set_user_permissions(user_id, 'dhcp', True, True, False)
+        
+        return jsonify({'success': True, 'user_id': user_id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@auth_bp.route('/users/<int:user_id>', methods=['DELETE'])
+@token_required
+def delete_user(current_user, user_id):
+    if current_user['role'] != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    try:
+        db.delete_user(user_id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@auth_bp.route('/user-permissions', methods=['POST'])
+@token_required
+def update_user_permissions(current_user):
+    if current_user['role'] != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    try:
+        if data['permission'] == 'can_start':
+            db.set_user_permissions(
+                data['user_id'],
+                data['attack_type'],
+                data['value'],
+                None,
+                None
+            )
+        elif data['permission'] == 'can_stop':
+            db.set_user_permissions(
+                data['user_id'],
+                data['attack_type'],
+                None,
+                data['value'],
+                None
+            )
+        elif data['permission'] == 'can_view_logs':
+            db.set_user_permissions(
+                data['user_id'],
+                data['attack_type'],
+                None,
+                None,
+                data['value']
+            )
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500 

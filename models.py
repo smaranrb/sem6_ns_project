@@ -69,14 +69,71 @@ class Database:
         self.conn.commit()
         return user_id
 
-    def set_user_permissions(self, user_id, permissions):
-        """Set user permissions"""
-        for perm in permissions:
-            self.cur.execute("""
-                INSERT INTO user_permissions (user_id, attack_type, can_start, can_stop, can_view_logs)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (user_id, perm['attack_type'], perm['can_start'], perm['can_stop'], perm['can_view_logs']))
-        self.conn.commit()
+    def set_user_permissions(self, user_id, attack_type=None, can_start=None, can_stop=None, can_view_logs=None, permissions=None):
+        """Set user permissions
+        Can be called in two ways:
+        1. With individual permission parameters: user_id, attack_type, can_start, can_stop, can_view_logs
+        2. With a list of permission dictionaries: user_id, permissions=[{attack_type, can_start, can_stop, can_view_logs}]
+        """
+        try:
+            if permissions is not None:
+                # Bulk update with list of permissions
+                # First, delete existing permissions for this user
+                self.cur.execute("DELETE FROM user_permissions WHERE user_id = %s", (user_id,))
+                
+                # Then insert new permissions
+                for perm in permissions:
+                    self.cur.execute("""
+                        INSERT INTO user_permissions (user_id, attack_type, can_start, can_stop, can_view_logs)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (user_id, perm['attack_type'], perm['can_start'], perm['can_stop'], perm['can_view_logs']))
+            else:
+                # Individual permission update
+                # First, check if permission exists
+                self.cur.execute("""
+                    SELECT * FROM user_permissions 
+                    WHERE user_id = %s AND attack_type = %s
+                """, (user_id, attack_type))
+                
+                existing = self.cur.fetchone()
+                
+                if existing:
+                    # Update existing permission
+                    update_fields = []
+                    update_values = []
+                    
+                    if can_start is not None:
+                        update_fields.append("can_start = %s")
+                        update_values.append(can_start)
+                    if can_stop is not None:
+                        update_fields.append("can_stop = %s")
+                        update_values.append(can_stop)
+                    if can_view_logs is not None:
+                        update_fields.append("can_view_logs = %s")
+                        update_values.append(can_view_logs)
+                    
+                    if update_fields:
+                        query = f"""
+                            UPDATE user_permissions 
+                            SET {', '.join(update_fields)}
+                            WHERE user_id = %s AND attack_type = %s
+                        """
+                        update_values.extend([user_id, attack_type])
+                        self.cur.execute(query, tuple(update_values))
+                else:
+                    # Insert new permission
+                    self.cur.execute("""
+                        INSERT INTO user_permissions (user_id, attack_type, can_start, can_stop, can_view_logs)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (user_id, attack_type, 
+                         can_start if can_start is not None else False,
+                         can_stop if can_stop is not None else False,
+                         can_view_logs if can_view_logs is not None else False))
+            
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            raise e
 
     def verify_user(self, username, password):
         """Verify user credentials"""
@@ -169,14 +226,91 @@ class Database:
         self.conn.commit()
 
     def get_user_sessions(self, user_id):
-        """Get user's attack sessions"""
-        self.cur.execute("""
-            SELECT id, attack_type, start_time, end_time, status, parameters, affected_clients
-            FROM attack_sessions
-            WHERE user_id = %s
-            ORDER BY start_time DESC
-        """, (user_id,))
-        return self.cur.fetchall()
+        """Get all attack sessions for a user"""
+        try:
+            self.cur.execute("""
+                SELECT 
+                    id,
+                    attack_type,
+                    parameters,
+                    affected_clients,
+                    start_time,
+                    end_time,
+                    status
+                FROM attack_sessions
+                WHERE user_id = %s
+                ORDER BY start_time DESC
+                LIMIT 100
+            """, (user_id,))
+            sessions = self.cur.fetchall()
+            return sessions
+        except Exception as e:
+            self.conn.rollback()  # Rollback the failed transaction
+            raise e
+
+    def get_user_logs(self, user_id):
+        """Get all activity logs for a user"""
+        try:
+            self.cur.execute("""
+                SELECT action, details, timestamp as created_at
+                FROM system_logs
+                WHERE user_id = %s
+                ORDER BY timestamp DESC
+                LIMIT 100
+            """, (user_id,))
+            logs = self.cur.fetchall()
+            return logs
+        except Exception as e:
+            self.conn.rollback()  # Rollback the failed transaction
+            raise e
+
+    def get_all_users(self):
+        """Get all users with their permissions"""
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get all users
+            cur.execute("""
+                SELECT id, username, email, role, created_at, last_login, is_active
+                FROM users
+                ORDER BY created_at DESC
+            """)
+            users = cur.fetchall()
+            
+            # Get permissions for each user
+            for user in users:
+                cur.execute("""
+                    SELECT attack_type, can_start, can_stop, can_view_logs
+                    FROM user_permissions
+                    WHERE user_id = %s
+                """, (user['id'],))
+                permissions = cur.fetchall()
+                
+                # Organize permissions by attack type
+                user['permissions'] = {}
+                for perm in permissions:
+                    user['permissions'][perm['attack_type']] = {
+                        'can_start': perm['can_start'],
+                        'can_stop': perm['can_stop'],
+                        'can_view_logs': perm['can_view_logs']
+                    }
+            
+            return users
+
+    def delete_user(self, user_id):
+        """Delete a user and all associated data"""
+        with self.conn.cursor() as cur:
+            # Delete user permissions
+            cur.execute("DELETE FROM user_permissions WHERE user_id = %s", (user_id,))
+            
+            # Delete attack sessions
+            cur.execute("DELETE FROM attack_sessions WHERE user_id = %s", (user_id,))
+            
+            # Delete system logs
+            cur.execute("DELETE FROM system_logs WHERE user_id = %s", (user_id,))
+            
+            # Delete the user
+            cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+            
+            self.conn.commit()
 
     def close(self):
         """Close database connection"""

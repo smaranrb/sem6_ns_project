@@ -66,8 +66,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.token) {
-                    // Store token in cookies with path /
+                    // Store token in both cookies and localStorage
                     document.cookie = `token=${data.token}; path=/`;
+                    localStorage.setItem('token', data.token);
                     
                     // Store user info in localStorage
                     localStorage.setItem('user', JSON.stringify(data.user));

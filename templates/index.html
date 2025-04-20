@@ -49,6 +49,9 @@
                     <h4 class="mb-4 text-center">MITM Tool</h4>
                     <a href="/dashboard" class="active">Dashboard</a>
                     <a href="#" id="profile-link">Profile</a>
+                    <div id="admin-links" style="display: none;">
+                        <a href="/user-management">User Management</a>
+                    </div>
                     <a href="#" id="logout-link">Logout</a>
                 </div>
             </div>
@@ -123,7 +126,7 @@
 
         // User info
         const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
-        const token = getCookie('token');
+        const token = localStorage.getItem('token') || getCookie('token');
         
         // Update user display
         document.getElementById('username').textContent = userInfo.username || 'User';
@@ -134,8 +137,14 @@
             window.location.href = '/login';
         }
 
+        // Show admin links if user is admin
+        if (userInfo.role === 'admin') {
+            document.getElementById('admin-links').style.display = 'block';
+        }
+
         // Fetch attack status
         function updateAttackStatus() {
+            const token = localStorage.getItem('token') || getCookie('token');
             fetch('/api/status', {
                 headers: {
                     'Authorization': `Bearer ${token}`

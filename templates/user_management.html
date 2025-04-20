@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - MITM Attack Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .user-card {
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .permission-toggle {
+            cursor: pointer;
+        }
+        .permission-toggle.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">MITM Attack Tool</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/user-management">User Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Profile</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button class="btn btn-outline-light" onclick="logout()">Logout</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>User Management</h2>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h4>Existing Users</h4>
+                <div id="usersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check if user is admin and logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token') || getCookie('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            fetch('/api/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.user || data.user.role !== 'admin') {
+                    window.location.href = '/';
+                    return;
+                }
+                loadUsers();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.location.href = '/login';
+            });
+        });
+
+        // Helper function to get cookie value
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        function loadUsers() {
+            const token = localStorage.getItem('token') || getCookie('token');
+            fetch('/api/users', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(users => {
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = users.map(user => `
+                    <div class="card user-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h5 class="card-title">${user.username}</h5>
+                                    <p class="card-text">${user.email}</p>
+                                    <p class="card-text">Role: ${user.role}</p>
+                                </div>
+                                <div class="col-md-9">
+                                    <h6>Permissions</h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-toggle" type="checkbox" 
+                                                    id="arp_start_${user.id}" 
+                                                    ${user.permissions.arp?.can_start ? 'checked' : ''}
+                                                    onchange="updatePermission(${user.id}, 'arp', 'can_start', this.checked)">
+                                                <label class="form-check-label" for="arp_start_${user.id}">
+                                                    ARP Start
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-toggle" type="checkbox" 
+                                                    id="arp_stop_${user.id}"
+                                                    ${user.permissions.arp?.can_stop ? 'checked' : ''}
+                                                    onchange="updatePermission(${user.id}, 'arp', 'can_stop', this.checked)">
+                                                <label class="form-check-label" for="arp_stop_${user.id}">
+                                                    ARP Stop
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-toggle" type="checkbox" 
+                                                    id="arp_logs_${user.id}"
+                                                    ${user.permissions.arp?.can_view_logs ? 'checked' : ''}
+                                                    onchange="updatePermission(${user.id}, 'arp', 'can_view_logs', this.checked)">
+                                                <label class="form-check-label" for="arp_logs_${user.id}">
+                                                    ARP View Logs
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-toggle" type="checkbox" 
+                                                    id="dhcp_start_${user.id}"
+                                                    ${user.permissions.dhcp?.can_start ? 'checked' : ''}
+                                                    onchange="updatePermission(${user.id}, 'dhcp', 'can_start', this.checked)">
+                                                <label class="form-check-label" for="dhcp_start_${user.id}">
+                                                    DHCP Start
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-toggle" type="checkbox" 
+                                                    id="dhcp_stop_${user.id}"
+                                                    ${user.permissions.dhcp?.can_stop ? 'checked' : ''}
+                                                    onchange="updatePermission(${user.id}, 'dhcp', 'can_stop', this.checked)">
+                                                <label class="form-check-label" for="dhcp_stop_${user.id}">
+                                                    DHCP Stop
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-toggle" type="checkbox" 
+                                                    id="dhcp_logs_${user.id}"
+                                                    ${user.permissions.dhcp?.can_view_logs ? 'checked' : ''}
+                                                    onchange="updatePermission(${user.id}, 'dhcp', 'can_view_logs', this.checked)">
+                                                <label class="form-check-label" for="dhcp_logs_${user.id}">
+                                                    DHCP View Logs
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">
+                                                Delete User
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function updatePermission(userId, attackType, permission, value) {
+            const token = localStorage.getItem('token') || getCookie('token');
+            fetch('/api/user-permissions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    attack_type: attackType,
+                    permission: permission,
+                    value: value
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    loadUsers();
+                } else {
+                    alert('Failed to update permission');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user?')) {
+                return;
+            }
+
+            const token = localStorage.getItem('token') || getCookie('token');
+            fetch(`/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    loadUsers();
+                } else {
+                    alert('Failed to delete user');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html> 

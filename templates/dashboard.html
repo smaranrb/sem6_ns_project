@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MITM Attack Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 60px;
+        }
+        .sidebar {
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: 0.5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .attack-card {
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .attack-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .active-attacks {
+            margin-top: 40px;
+        }
+        .card-header {
+            font-weight: bold;
+            background-color: #343a40;
+            color: white;
+        }
+        .permissions-badge {
+            margin-left: 10px;
+        }
+        #logout-btn {
+            color: white;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .modal-header {
+            background-color: #343a40;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">MITM Attack Tool</a>
+            <div class="d-flex">
+                <a href="/profile" class="btn btn-outline-light me-2">Profile</a>
+                <button id="logout-btn" class="btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#attack-options">
+                                <span data-feather="crosshair"></span>
+                                Attack Options
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#active-attacks">
+                                <span data-feather="activity"></span>
+                                Active Attacks
+                            </a>
+                        </li>
+                        <li class="nav-item" id="admin-nav-item" style="display: none;">
+                            <a class="nav-link" href="/admin/users">
+                                <span data-feather="users"></span>
+                                User Management
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="main-content col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div id="alert-container"></div>
+                
+                <section id="attack-options" class="mb-5">
+                    <h2 class="mt-3 mb-4">Attack Options</h2>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card attack-card" id="arp-attack-card">
+                                <div class="card-header">
+                                    ARP Poisoning
+                                    <span class="permissions-badge badge bg-danger" id="arp-permission-badge" style="display: none;">Not Permitted</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Redirect traffic by spoofing ARP packets between a target and gateway.</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#arpModal" id="arp-attack-btn">
+                                        Launch Attack
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card attack-card" id="dhcp-attack-card">
+                                <div class="card-header">
+                                    DHCP Spoofing
+                                    <span class="permissions-badge badge bg-danger" id="dhcp-permission-badge" style="display: none;">Not Permitted</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Provide malicious DHCP responses to clients on the network.</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dhcpModal" id="dhcp-attack-btn">
+                                        Launch Attack
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="active-attacks" class="active-attacks">
+                    <h2 class="mt-3 mb-4">Active Attacks</h2>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Started</th>
+                                    <th>Target(s)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="active-attacks-table">
+                                <!-- Active attacks will be populated here via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="no-attacks-message" class="alert alert-info mt-3" style="display: none;">
+                        No active attacks running.
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- ARP Poisoning Modal -->
+    <div class="modal fade" id="arpModal" tabindex="-1" aria-labelledby="arpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="arpModalLabel">Launch ARP Poisoning Attack</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="arp-attack-form">
+                        <div class="mb-3">
+                            <label for="target-ip" class="form-label">Target IP</label>
+                            <input type="text" class="form-control" id="target-ip" required
+                                   placeholder="e.g., 192.168.158.100">
+                        </div>
+                        <div class="mb-3">
+                            <label for="gateway-ip" class="form-label">Gateway IP</label>
+                            <input type="text" class="form-control" id="gateway-ip" required
+                                   placeholder="e.g., 192.168.158.1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="arp-interface" class="form-label">Interface</label>
+                            <input type="text" class="form-control" id="arp-interface" 
+                                   placeholder="e.g., bridge101" value="bridge101">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="launch-arp-btn">Launch Attack</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DHCP Spoofing Modal -->
+    <div class="modal fade" id="dhcpModal" tabindex="-1" aria-labelledby="dhcpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dhcpModalLabel">Launch DHCP Spoofing Attack</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dhcp-attack-form">
+                        <div class="mb-3">
+                            <label for="spoofed-ip" class="form-label">Spoofed IP</label>
+                            <input type="text" class="form-control" id="spoofed-ip" required
+                                   placeholder="e.g., 192.168.158.100">
+                        </div>
+                        <div class="mb-3">
+                            <label for="spoofed-gw" class="form-label">Spoofed Gateway</label>
+                            <input type="text" class="form-control" id="spoofed-gw" required
+                                   placeholder="e.g., 192.168.158.1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="dns" class="form-label">DNS Server</label>
+                            <input type="text" class="form-control" id="dns" 
+                                   placeholder="e.g., 1.1.1.1" value="1.1.1.1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="subnet-mask" class="form-label">Subnet Mask</label>
+                            <input type="text" class="form-control" id="subnet-mask" 
+                                   placeholder="e.g., 255.255.255.0" value="255.255.255.0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="dhcp-interface" class="form-label">Interface</label>
+                            <input type="text" class="form-control" id="dhcp-interface" 
+                                   placeholder="e.g., bridge101" value="bridge101">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="launch-dhcp-btn">Launch Attack</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Show admin section if user is admin
+            if (userInfo.role === 'admin') {
+                document.getElementById('admin-nav-item').style.display = 'block';
+            }
+            
+            // Fetch user permissions and update UI
+            fetchUserPermissions();
+            
+            // Load active attacks
+            loadActiveAttacks();
+            
+            // Set up refresh interval for active attacks
+            setInterval(loadActiveAttacks, 10000);
+            
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                logoutUser();
+            });
+            
+            // ARP attack button
+            document.getElementById('launch-arp-btn').addEventListener('click', function() {
+                launchArpAttack();
+            });
+            
+            // DHCP attack button
+            document.getElementById('launch-dhcp-btn').addEventListener('click', function() {
+                launchDhcpAttack();
+            });
+        });
+        
+        function fetchUserPermissions() {
+            fetch('/api/profile', {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.permissions) {
+                    updateAttackPermissions(data.permissions);
+                }
+            })
+            .catch(error => {
+                showAlert('Error fetching user permissions: ' + error.message, 'danger');
+            });
+        }
+        
+        function updateAttackPermissions(permissions) {
+            // ARP poisoning permissions
+            if (permissions.arp_poisoning) {
+                document.getElementById('arp-permission-badge').style.display = 'none';
+                document.getElementById('arp-attack-btn').disabled = false;
+            } else {
+                document.getElementById('arp-permission-badge').style.display = 'inline-block';
+                document.getElementById('arp-attack-btn').disabled = true;
+            }
+            
+            // DHCP spoofing permissions
+            if (permissions.dhcp_spoofing) {
+                document.getElementById('dhcp-permission-badge').style.display = 'none';
+                document.getElementById('dhcp-attack-btn').disabled = false;
+            } else {
+                document.getElementById('dhcp-permission-badge').style.display = 'inline-block';
+                document.getElementById('dhcp-attack-btn').disabled = true;
+            }
+        }
+        
+        function loadActiveAttacks() {
+            fetch('/api/attacks/active', {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('active-attacks-table');
+                const noAttacksMessage = document.getElementById('no-attacks-message');
+                
+                // Clear existing rows
+                tableBody.innerHTML = '';
+                
+                if (data.attacks && data.attacks.length > 0) {
+                    data.attacks.forEach(attack => {
+                        const row = document.createElement('tr');
+                        
+                        // Format the date
+                        const startDate = new Date(attack.started_at * 1000);
+                        const formattedDate = startDate.toLocaleString();
+                        
+                        row.innerHTML = `
+                            <td>${attack.id}</td>
+                            <td>${capitalizeFirstLetter(attack.type.replace('_', ' '))}</td>
+                            <td>${formattedDate}</td>
+                            <td>${attack.targets}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger stop-attack-btn" data-attack-id="${attack.id}">
+                                    Stop
+                                </button>
+                            </td>
+                        `;
+                        
+                        tableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to stop buttons
+                    document.querySelectorAll('.stop-attack-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const attackId = this.getAttribute('data-attack-id');
+                            stopAttack(attackId);
+                        });
+                    });
+                    
+                    noAttacksMessage.style.display = 'none';
+                } else {
+                    noAttacksMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                showAlert('Error loading active attacks: ' + error.message, 'danger');
+            });
+        }
+        
+        function launchArpAttack() {
+            const targetIp = document.getElementById('target-ip').value;
+            const gatewayIp = document.getElementById('gateway-ip').value;
+            const interface = document.getElementById('arp-interface').value;
+            
+            if (!targetIp || !gatewayIp) {
+                showAlert('Please fill in all required fields.', 'warning');
+                return;
+            }
+            
+            fetch('/api/attacks/arp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify({
+                    target_ip: targetIp,
+                    gateway_ip: gatewayIp,
+                    interface: interface
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('arpModal'));
+                    modal.hide();
+                    
+                    // Show success message
+                    showAlert('ARP poisoning attack launched successfully.', 'success');
+                    
+                    // Reload active attacks
+                    loadActiveAttacks();
+                } else {
+                    showAlert('Failed to launch attack: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error launching attack: ' + error.message, 'danger');
+            });
+        }
+        
+        function launchDhcpAttack() {
+            const spoofedIp = document.getElementById('spoofed-ip').value;
+            const spoofedGw = document.getElementById('spoofed-gw').value;
+            const dns = document.getElementById('dns').value;
+            const subnetMask = document.getElementById('subnet-mask').value;
+            const interface = document.getElementById('dhcp-interface').value;
+            
+            if (!spoofedIp || !spoofedGw) {
+                showAlert('Please fill in all required fields.', 'warning');
+                return;
+            }
+            
+            fetch('/api/attacks/dhcp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify({
+                    spoofed_ip: spoofedIp,
+                    spoofed_gw: spoofedGw,
+                    dns: dns,
+                    subnet_mask: subnetMask,
+                    interface: interface
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('dhcpModal'));
+                    modal.hide();
+                    
+                    // Show success message
+                    showAlert('DHCP spoofing attack launched successfully.', 'success');
+                    
+                    // Reload active attacks
+                    loadActiveAttacks();
+                } else {
+                    showAlert('Failed to launch attack: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error launching attack: ' + error.message, 'danger');
+            });
+        }
+        
+        function stopAttack(attackId) {
+            fetch(`/api/attacks/${attackId}/stop`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Attack stopped successfully.', 'success');
+                    loadActiveAttacks();
+                } else {
+                    showAlert('Failed to stop attack: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error stopping attack: ' + error.message, 'danger');
+            });
+        }
+        
+        function logoutUser() {
+            fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Clear local storage regardless of response
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                
+                // Redirect to login page
+                window.location.href = '/login';
+            })
+            .catch(error => {
+                // In case of error, still logout locally
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                window.location.href = '/login';
+            });
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.role = 'alert';
+            
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 150);
+            }, 5000);
+        }
+        
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+    </script>
+</body>
+</html> 
